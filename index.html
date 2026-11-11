@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Table Frame Column Width Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ================= 顶部宽度面板 ================= */
+    .width-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 14px 12px;
+    }
+
+    .width-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .width-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    .total-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #1d4b6e;
+      background: #eef4f9;
+      border: 1px solid #d6e4ef;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .width-panel {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    @media (min-width: 520px) {
+      .width-panel { grid-template-columns: repeat(8, 1fr); }
+    }
+
+    .width-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 4px;
+      border-radius: 9px;
+      background: #f5f8fb;
+      border: 1px solid #e8eff6;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .width-item.active {
+      background: #eaf3ff;
+      border-color: #b8d8ff;
+    }
+
+    .width-code {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #1d4b6e;
+      letter-spacing: 0.4px;
+    }
+
+    .width-value {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #007AFF;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+      letter-spacing: -0.2px;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: #8a9aa8;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* ================= 表格卡片 ================= */
+    .history-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 14px 12px 12px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .history-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .refresh-btn {
+      flex-shrink: 0;
+      height: 32px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 8px;
+      background: #007AFF;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .refresh-btn:active { background: #0056CC; }
+
+    /* 表格外框：横向溢出被裁掉，不出滚动条 */
+    .history-frame {
+      overflow-x: hidden;
+      overflow-y: auto;
+      max-height: 320px;
+      border: 1px solid #e2eaf2;
+      border-radius: 8px;
+      background: #fff;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* ===== 历史记录表 ===== */
+    .history-frame table {
+      table-layout: fixed;
+      width: 368px;
+      border-collapse: collapse;
+      font-size: 10px;
+      line-height: 1.25;
+    }
+
+    .history-frame col:nth-child(1) { width: 44px; }
+    .history-frame col:nth-child(2) { width: 34px; }
+    .history-frame col:nth-child(3) { width: 44px; }
+    .history-frame col:nth-child(4) { width: 34px; }
+    .history-frame col:nth-child(5) { width: 92px; }
+    .history-frame col:nth-child(6) { width: 44px; }
+    .history-frame col:nth-child(7) { width: 38px; }
+    .history-frame col:nth-child(8) { width: 38px; }
+
+    .history-frame th {
+      background: #1d4b6e;
+      color: #fff;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.3px;
+      padding: 7px 4px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      border-right: 1px solid #2f638b;
+      border-bottom: 2px solid #163a56;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .history-frame th:last-child { border-right: none; }
+
+    .history-frame td {
+      padding: 5px 4px;
+      border-bottom: 1px solid #eaf1f8;
+      color: #1e2f3e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+    .history-frame tr:last-child td { border-bottom: none; }
+    .history-frame tr:hover td { background: #f5faff; }
+
+    .history-frame td.date-cell {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* ===== 列宽拖拽把手 ===== */
+    .history-frame th.resizable {
+      cursor: col-resize;
+      transition: background 0.15s;
+    }
+    .history-frame th.resizable:hover { background: #2a5d85; }
+
+    .resizer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 14px;
+      cursor: col-resize;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      z-index: 6;
+      background: transparent;
+    }
+    .resizer::after {
+      content: '';
+      position: absolute;
+      right: 4px;
+      top: 20%;
+      bottom: 20%;
+      width: 3px;
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: 2px;
+      transition: background 0.15s, width 0.15s, box-shadow 0.15s;
+    }
+    th.resizable:hover .resizer::after {
+      background: #4fc3f7;
+      width: 4px;
+      box-shadow: 0 0 5px rgba(79, 195, 247, 0.9);
+    }
+    .resizer.active::after {
+      background: #4fc3f7;
+      width: 4px;
+      box-shadow: 0 0 6px rgba(79, 195, 247, 1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- ============ 顶部：实时列宽显示 ============ -->
+    <div class="width-card">
+      <div class="width-header">
+        <span class="width-title">Column Widths (live)</span>
+        <span class="total-badge" id="totalWidth">total —</span>
+      </div>
+      <div class="width-panel" id="widthPanel"></div>
+      <div class="hint">拖动表格表头的白色竖条调整列宽，上方数值实时更新</div>
+    </div>
+
+    <!-- ============ 表格 ============ -->
+    <div class="history-card">
+      <div class="history-header">
+        <span class="history-title">Demo Table Frame</span>
+        <button type="button" class="refresh-btn" id="resetBtn">Reset</button>
+      </div>
+      <div class="history-frame" id="historyFrame"></div>
+    </div>
+
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const HEADERS = ['DAT', 'SHP', 'GRD', 'SUR', 'CSD', 'THK', 'QTY', 'LCT'];
+    const DEFAULT_WIDTHS = [44, 34, 44, 34, 92, 44, 38, 38];
+    const MIN_WIDTH = 26;
+
+    const historyFrame = document.getElementById('historyFrame');
+    const widthPanel   = document.getElementById('widthPanel');
+    const totalWidthEl = document.getElementById('totalWidth');
+
+    /* ---------------------------------------------------------
+       1. 生成顶部 8 个宽度显示块
+       --------------------------------------------------------- */
+    const valueEls = [];
+
+    HEADERS.forEach((code, i) => {
+      const item = document.createElement('div');
+      item.className = 'width-item';
+      item.dataset.col = i;
+
+      const codeEl = document.createElement('span');
+      codeEl.className = 'width-code';
+      codeEl.textContent = code;
+
+      const valEl = document.createElement('span');
+      valEl.className = 'width-value';
+      valEl.textContent = '—';
+
+      item.appendChild(codeEl);
+      item.appendChild(valEl);
+      widthPanel.appendChild(item);
+
+      valueEls.push({ item: item, val: valEl });
+    });
+
+    /* ---------------------------------------------------------
+       2. 假数据（demo 用，不连 GAS）
+       --------------------------------------------------------- */
+    const MOCK_ROWS = [
+      ['11/11/2026 08:12:45', 'Plate',  'SS400', '2B',  '1219 x 2438', '3.0', '120', 'A-01'],
+      ['11/11/2026 08:31:10', 'Coil',   'SPHC',  'No.1','1219 x 2438', '4.5', '85',  'B-12'],
+      ['11/11/2026 09:05:22', 'Plate',  'SS400', '2B',  '1500 x 3000', '6.0', '42',  'A-03'],
+      ['11/11/2026 09:48:03', 'Square', 'Q235',  'Black','100 x 100',  '2.3', '210', 'C-07'],
+      ['11/11/2026 10:14:37', 'Round',  'Q235',  'Black','50 x 50',    '1.8', '330', 'C-11'],
+      ['11/11/2026 10:52:19', 'Plate',  'SS400', '2B',  '1219 x 2438', '3.0', '118', 'A-01'],
+      ['11/11/2026 11:20:56', 'Coil',   'SPHC',  'No.1','1500 x 3000', '4.5', '64',  'B-08'],
+      ['11/11/2026 11:47:41', 'Plate',  'SS400', '2B',  '1500 x 6000', '8.0', '25',  'A-05'],
+      ['11/11/2026 12:03:15', 'Square', 'Q235',  'Black','75 x 75',    '2.0', '180', 'C-09'],
+      ['11/11/2026 12:16:35', 'Round',  'Q235',  'Black','60 x 60',    '1.8', '275', 'C-13']
+    ];
+
+    /* ---------------------------------------------------------
+       3. 渲染表格
+       --------------------------------------------------------- */
+    function renderTable(rows) {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        historyFrame.innerHTML = '<div style="padding:22px;text-align:center;color:#4b6f8a;font-size:13px;">No data</div>';
+        return;
+      }
+
+      let html = '<table><colgroup>' + '<col>'.repeat(8) + '</colgroup><thead><tr>';
+      HEADERS.forEach((h, i) => {
+        html += '<th class="resizable" data-col="' + i + '">' + h
+              + '<div class="resizer"></div></th>';
+      });
+      html += '</tr></thead><tbody>';
+
+      rows.forEach(r => {
+        html += '<tr>';
+        for (let i = 0; i < 8; i++) {
+          let value = r[i];
+          if (i === 0) value = formatDateShort(value);
+          const cls = (i === 0) ? ' class="date-cell"' : '';
+          html += '<td' + cls + '>' + escapeHtml(value) + '</td>';
+        }
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      historyFrame.innerHTML = html;
+
+      makeResizable();
+      updateWidthDisplay();   // 渲染完成后立即显示一次真实 px
+    }
+
+    /* ---------------------------------------------------------
+       4. 实时读取 8 列的真实渲染宽度
+       --------------------------------------------------------- */
+    function updateWidthDisplay() {
+      const ths = historyFrame.querySelectorAll('thead th');
+      if (!ths.length) return;
+
+      let total = 0;
+
+      ths.forEach((th, i) => {
+        const w = th.getBoundingClientRect().width;
+        total += w;
+        if (valueEls[i]) {
+          valueEls[i].val.textContent = w.toFixed(1) + 'px';
+        }
+      });
+
+      totalWidthEl.textContent = 'total ' + total.toFixed(1) + 'px';
+    }
+
+    /* ---------------------------------------------------------
+       5. 列宽拖拽（px 模式，总宽可变，可溢出 frame）
+       --------------------------------------------------------- */
+    function makeResizable() {
+      const table = historyFrame.querySelector('table');
+      if (!table) return;
+      const cols = table.querySelectorAll('colgroup col');
+
+      historyFrame.querySelectorAll('th.resizable').forEach(th => {
+        const colIndex = parseInt(th.dataset.col, 10);
+        const col    = cols[colIndex];
+        const handle = th.querySelector('.resizer');
+        if (!col || !handle) return;
+
+        let startX = 0, startWidth = 0, startTableWidth = 0, dragging = false;
+
+        const getX = e => {
+          if (e.touches && e.touches.length) return e.touches[0].clientX;
+          if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
+          return e.clientX;
+        };
+
+        const onStart = e => {
+          e.preventDefault();
+          e.stopPropagation();
+          dragging = true;
+          handle.classList.add('active');
+          document.body.style.userSelect = 'none';
+          document.body.style.cursor = 'col-resize';
+
+          // 高亮顶部对应的宽度块
+          if (valueEls[colIndex]) valueEls[colIndex].item.classList.add('active');
+
+          startX          = getX(e);
+          startWidth      = th.getBoundingClientRect().width;
+          startTableWidth = table.getBoundingClientRect().width;
+
+          document.addEventListener('mousemove', onMove, { passive: false });
+          document.addEventListener('mouseup', onEnd);
+          document.addEventListener('touchmove', onMove, { passive: false });
+          document.addEventListener('touchend', onEnd);
+          document.addEventListener('touchcancel', onEnd);
+        };
+
+        const onMove = e => {
+          if (!dragging) return;
+          if (e.cancelable) e.preventDefault();
+
+          const delta       = getX(e) - startX;
+          const newWidth    = Math.max(MIN_WIDTH, startWidth + delta);
+          const actualDelta = newWidth - startWidth;
+          const newTableW   = Math.max(100, startTableWidth + actualDelta);
+
+          col.style.width   = newWidth + 'px';
+          table.style.width = newTableW + 'px';
+
+          updateWidthDisplay();   // ← 拖拽过程中实时刷新顶部数值
+        };
+
+        const onEnd = () => {
+          if (!dragging) return;
+          dragging = false;
+          handle.classList.remove('active');
+          document.body.style.userSelect = '';
+          document.body.style.cursor = '';
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onEnd);
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onEnd);
+          document.removeEventListener('touchcancel', onEnd);
+
+          if (valueEls[colIndex]) valueEls[colIndex].item.classList.remove('active');
+
+          updateWidthDisplay();   // 松手后再校准一次
+        };
+
+        handle.addEventListener('mousedown', onStart);
+        handle.addEventListener('touchstart', onStart, { passive: false });
+      });
+    }
+
+    /* ---------------------------------------------------------
+       6. Reset 按钮：恢复默认列宽
+       --------------------------------------------------------- */
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      const table = historyFrame.querySelector('table');
+      if (!table) return;
+      const cols = table.querySelectorAll('colgroup col');
+
+      cols.forEach((c, i) => {
+        c.style.width = DEFAULT_WIDTHS[i] + 'px';
+      });
+      table.style.width = DEFAULT_WIDTHS.reduce((a, b) => a + b, 0) + 'px';
+
+      updateWidthDisplay();
+    });
+
+    /* ---------------------------------------------------------
+       工具
+       --------------------------------------------------------- */
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    // GS 的 MM/DD/YYYY HH:mm:ss 或 YYYY-MM-DD HH:mm:ss → DD/MM
+    function formatDateShort(val) {
+      if (val === null || val === undefined || val === '') return '';
+      const s = String(val).trim();
+      if (!s) return '';
+
+      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+      if (m) return pad2(m[3]) + '/' + pad2(m[2]);
+
+      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+      if (m) return pad2(m[2]) + '/' + pad2(m[1]);
+
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1);
+      }
+      return s;
+    }
+
+    /* ---------------------------------------------------------
+       启动
+       --------------------------------------------------------- */
+    renderTable(MOCK_ROWS);
+
+    // 窗口尺寸变化时也刷新一次（例如横竖屏切换）
+    window.addEventListener('resize', updateWidthDisplay);
+
+  })();
+  </script>
+</body>
+</html>
